@@ -65,7 +65,7 @@ server = tls.createServer(options, function (clearTextStream) {
         return;
     }
 
-    clearTextStream.end('Your certificate is invalid!\n', 'utf8');
+    clearTextStream.end('You are not authorized!\n', 'utf8');
 });
 
 dbConnection.databaseOpen(function () {
