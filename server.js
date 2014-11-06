@@ -60,7 +60,12 @@ options = {
 };
 
 server = tls.createServer(options, function (clearTextStream) {
-    requestHandler(clearTextStream);
+    if (clearTextStream.authorized) {
+        requestHandler(clearTextStream);
+        return;
+    }
+
+    clearTextStream.end('You are not authorized!\n', 'utf8');
 });
 
 dbConnection.databaseOpen(function () {
