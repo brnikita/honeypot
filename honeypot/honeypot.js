@@ -5,7 +5,7 @@ var net = require('net'),
     server;
 
 server = net.createServer(function (stream) {
-    stream.end('Welcome to honeypot!\n', 'utf8');
+    stream.end('Welcome to honeypot!\n');
 });
 
 server.listen(config.PORT, function () {

@@ -6,7 +6,6 @@ var tls = require('tls'),
     config = require('./config'),
     dbConnection = require('./dbConnection'),
     ConnectionsModel = require('./connectionsModel'),
-    honeypotStream,
     options,
     server;
 
@@ -15,16 +14,17 @@ var tls = require('tls'),
  *
  * @function
  * @name reRouteRequest
- * @param {string | Buffer} chunk
+ * @param {string} chunk
  * @param {tls.CleartextStream} clearTextStream
  * @returns {undefined}
  */
 function reRouteRequest(chunk, clearTextStream) {
     var connection = new ConnectionsModel({
-        port: clearTextStream.remotePort,
-        host: clearTextStream.remoteAddress,
-        requestBody: chunk
-    });
+            port: clearTextStream.remotePort,
+            host: clearTextStream.remoteAddress,
+            requestBody: chunk
+        }),
+        honeypotStream = net.connect({port: config.HONEYPOT_PORT});
 
     connection.save();
     honeypotStream.pipe(clearTextStream);
@@ -44,7 +44,7 @@ function requestHandler(clearTextStream) {
 
     clearTextStream.on('data', function (chunk) {
         if (truePacketRegExp.test(chunk)) {
-            clearTextStream.end('Welcome!\n', 'utf8');
+            clearTextStream.end('Welcome!\n');
             return;
         }
 
@@ -60,20 +60,20 @@ options = {
 };
 
 server = tls.createServer(options, function (clearTextStream) {
-    if (clearTextStream.authorized) {
-        requestHandler(clearTextStream);
-        return;
+    if (!clearTextStream.authorized) {
+        console.log('Unauthorized connection!');
     }
 
-    clearTextStream.end('You are not authorized!\n', 'utf8');
+    clearTextStream.setEncoding('utf-8');
+    clearTextStream.on('error', function () {
+        clearTextStream.end('Something is wrong!\n');
+    });
+
+    requestHandler(clearTextStream);
 });
 
 dbConnection.databaseOpen(function () {
     server.listen(config.PORT, function () {
         console.log('Server started');
-    });
-
-    honeypotStream = net.connect({port: config.HONEYPOT_PORT}, function () {
-        console.log('Honeypot connection established');
     });
 });
