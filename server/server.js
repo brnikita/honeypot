@@ -5,7 +5,7 @@ var tls = require('tls'),
     net = require('net'),
     config = require('./config'),
     dbConnection = require('./dbConnection'),
-    ConnectionsModel = require('./connectionsModel'),
+    ConnectionsModel = require('./models/connectionsModel'),
     options,
     server;
 
@@ -60,10 +60,6 @@ options = {
 };
 
 server = tls.createServer(options, function (clearTextStream) {
-    if (!clearTextStream.authorized) {
-        console.log('Unauthorized connection!');
-    }
-
     clearTextStream.setEncoding('utf-8');
     clearTextStream.on('error', function () {
         clearTextStream.end('Something is wrong!\n');
