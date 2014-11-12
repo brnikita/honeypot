@@ -35,7 +35,7 @@ module.exports = {
      * @name HONEYPOT_HOST
      * @type {number}
      */
-    HONEYPOT_HOST: '0.0.0.0',
+    HONEYPOT_HOST: 'localhost',
 
     /**
      * Host of database
